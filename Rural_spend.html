@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rural Development</title>
+
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --grid: rgba(0,0,0,0.08);
+    --series: #1f5aa6;
+    --highlight: #d7191c;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 16px 10px 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+  }
+
+  .sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 10px 0;
+  }
+
+  .chart {
+    position: relative;
+    height: 420px;
+  }
+
+  .note {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 520px) {
+    .chart { height: 360px; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Rural Development</h1>
+    <p class="sub">₹ crore</p>
+
+    <div class="chart">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="note">Source: Union Budget</div>
+  </div>
+
+<script>
+(() => {
+  const labels = [
+    "FY17","FY18","FY19","FY20","FY21",
+    "FY22","FY23","FY24","FY25","FY26RE","FY27BE"
+  ];
+
+  const values = [
+    113877,134973,132803,142384,214246,
+    228760,238396,241193,206010,212750,273108
+  ];
+
+  const highlightIndex = 10; // FY27BE
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const baseColor = rootStyles.getPropertyValue('--series').trim();
+  const highlightColor = rootStyles.getPropertyValue('--highlight').trim();
+
+  const barColors = labels.map((_, i) =>
+    i === highlightIndex ? highlightColor : baseColor
+  );
+
+  Chart.register(ChartDataLabels);
+
+  const formatNumber = (v) => {
+    try {
+      return new Intl.NumberFormat('en-IN').format(v);
+    } catch {
+      return v;
+    }
+  };
+
+  new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: barColors,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => formatNumber(ctx.parsed.y)
+          }
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          clamp: true,
+          color: (ctx) =>
+            ctx.dataIndex === highlightIndex ? highlightColor : baseColor,
+          font: { weight: '700', size: 12 },
+          formatter: (v) => formatNumber(v)
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#374151' }
+        },
+        y: {
+          grid: { color: rootStyles.getPropertyValue('--grid').trim() },
+          ticks: {
+            color: '#374151',
+            callback: (v) => formatNumber(v)
+          }
+        }
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
